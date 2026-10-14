@@ -1,7 +1,6 @@
 -- ========================================================
--- 🛒 NEXUS MARKETPLACE DIRECTORY (AUTO-SCRAPE & SPAWN DROP)
+-- 🛒 NEXUS MARKETPLACE DIRECTORY (FIXED)
 -- Repository File: shop.lua
--- Features: Dynamic Scraper (Norm, Golden, Rainbow, Color) + Spawn Drop
 -- ========================================================
 
 local NexusOS = getgenv().NexusOS
@@ -17,7 +16,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 
--- User Database Setup
 local currentUser = getCurrentUser()
 if not currentUser or not db.users[currentUser] then return end
 local userData = db.users[currentUser]
@@ -26,12 +24,10 @@ if not userData.points then userData.points = 500 end
 if not userData.genSpeedLvl then userData.genSpeedLvl = 1 end
 if not userData.genAmountLvl then userData.genAmountLvl = 1 end
 
--- In-Game Remotes
 local CoinMarketRE = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Coin"):WaitForChild("CoinMarketRE")
 local DropRE = ReplicatedStorage:WaitForChild("Events"):WaitForChild("PickAndDrop"):WaitForChild("PickAndDropRE")
 local ItemConfig = require(ReplicatedStorage.ModuleScripts.ItemConfig)
 
--- App Main Container Frame
 local gameFrame = Instance.new("Frame")
 gameFrame.Name = "NexusMarketplaceApp"
 gameFrame.Size = UDim2.new(1, 0, 1, -40)
@@ -41,7 +37,6 @@ gameFrame.ClipsDescendants = true
 gameFrame.ZIndex = 51
 gameFrame.Parent = phoneFrame
 
--- HUD Header
 local hudFrame = Instance.new("Frame")
 hudFrame.Size = UDim2.new(1, -20, 0, 48)
 hudFrame.Position = UDim2.new(0, 10, 0, 8)
@@ -74,7 +69,6 @@ timerText.TextXAlignment = Enum.TextXAlignment.Left
 timerText.ZIndex = 53
 timerText.Parent = hudFrame
 
--- Tabs
 local shopTabBtn = Instance.new("TextButton")
 shopTabBtn.Size = UDim2.new(0, 60, 0, 26)
 shopTabBtn.Position = UDim2.new(1, -130, 0, 11)
@@ -99,7 +93,6 @@ upgTabBtn.ZIndex = 53
 upgTabBtn.Parent = hudFrame
 Instance.new("UICorner", upgTabBtn).CornerRadius = UDim.new(0, 6)
 
--- Search Box
 local searchBox = Instance.new("TextBox")
 searchBox.Size = UDim2.new(1, -20, 0, 28)
 searchBox.Position = UDim2.new(0, 10, 0, 62)
@@ -114,7 +107,6 @@ searchBox.ZIndex = 52
 searchBox.Parent = gameFrame
 Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 6)
 
--- Shop Container
 local shopScroll = Instance.new("ScrollingFrame")
 shopScroll.Size = UDim2.new(1, -20, 1, -130)
 shopScroll.Position = UDim2.new(0, 10, 0, 96)
@@ -128,7 +120,6 @@ gridLayout.CellSize = UDim2.new(0, 135, 0, 48)
 gridLayout.CellPadding = UDim2.new(0, 8, 0, 8)
 gridLayout.Parent = shopScroll
 
--- Upgrades Container
 local upgContainer = Instance.new("Frame")
 upgContainer.Size = UDim2.new(1, -20, 1, -130)
 upgContainer.Position = UDim2.new(0, 10, 0, 96)
@@ -137,7 +128,6 @@ upgContainer.Visible = false
 upgContainer.ZIndex = 52
 upgContainer.Parent = gameFrame
 
--- Speed Upgrade
 local speedBox = Instance.new("Frame")
 speedBox.Size = UDim2.new(1, 0, 0, 55)
 speedBox.Position = UDim2.new(0, 0, 0, 10)
@@ -170,7 +160,6 @@ speedBtn.ZIndex = 54
 speedBtn.Parent = speedBox
 Instance.new("UICorner", speedBtn).CornerRadius = UDim.new(0, 6)
 
--- Tab Handlers
 shopTabBtn.Activated:Connect(function()
     shopScroll.Visible = true
     searchBox.Visible = true
@@ -199,7 +188,6 @@ speedBtn.Activated:Connect(function()
     end
 end)
 
--- Execute Drop Logic
 local function triggerSpawnDrop(id)
     task.spawn(function()
         pcall(CoinMarketRE.FireServer, CoinMarketRE, "purchase", tonumber(id), 1)
@@ -208,7 +196,6 @@ local function triggerSpawnDrop(id)
     end)
 end
 
--- Data Scraper Logic (Normal, Golden, Rainbow, Color)
 local loadedItems = {}
 
 local function createGridCard(name, id, tagType)
@@ -259,7 +246,6 @@ local function createGridCard(name, id, tagType)
     end)
 end
 
--- Automatic Scraping from Module
 pcall(function()
     for _, item in pairs(ItemConfig.NORMAL_ITEM_LIST or {}) do
         if item and item.Id then createGridCard(item.Name or "Item", item.Id, "NORM") end
@@ -301,7 +287,6 @@ gridLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     shopScroll.CanvasSize = UDim2.new(0, 0, 0, gridLayout.AbsoluteContentSize.Y + 20)
 end)
 
--- Search Box Engine
 searchBox:GetPropertyChangedSignal("Text"):Connect(function()
     local query = searchBox.Text:lower()
     for _, child in ipairs(shopScroll:GetChildren()) do
@@ -311,7 +296,6 @@ searchBox:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
--- Passive Point Timer Loop
 local isAppRunning = true
 task.spawn(function()
     while gameFrame and gameFrame.Parent and isAppRunning do
@@ -322,7 +306,7 @@ task.spawn(function()
             task.wait(1)
         end
 
-        if gameFrame and gameFrame.Parent and isAppRunning do
+        if gameFrame and gameFrame.Parent and isAppRunning then
             userData.points = userData.points + (10 * userData.genAmountLvl)
             saveDatabase(db)
             pointsText.Text = "💎 BONUS: " .. userData.points
@@ -330,7 +314,6 @@ task.spawn(function()
     end
 end)
 
--- Navigation Home
 local backToHome = Instance.new("TextButton")
 backToHome.Size = UDim2.new(1, -40, 0, 26)
 backToHome.Position = UDim2.new(0, 20, 1, -32)
@@ -348,4 +331,3 @@ backToHome.Activated:Connect(function()
     gameFrame:Destroy()
     showHome()
 end)
-    
